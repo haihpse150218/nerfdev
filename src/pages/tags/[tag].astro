@@ -1,0 +1,119 @@
+---
+import Base from "../../layouts/Base.astro";
+import PostCard from "../../components/PostCard.astro";
+import { getCollection } from "astro:content";
+
+export async function getStaticPaths() {
+  const posts = await getCollection("blog", ({ data }) => !data.draft);
+
+  // Collect all unique tags
+  const tags = [...new Set(posts.flatMap((p) => p.data.tags))];
+
+  // Add 'all' as a special route
+  return [
+    {
+      params: { tag: "all" },
+      props: {
+        tag: "all",
+        posts: posts.sort(
+          (a, b) => b.data.publishedDate.valueOf() - a.data.publishedDate.valueOf()
+        ),
+        allTags: tags,
+      },
+    },
+    ...tags.map((tag) => ({
+      params: { tag },
+      props: {
+        tag,
+        posts: posts
+          .filter((p) => p.data.tags.includes(tag))
+          .sort((a, b) => b.data.publishedDate.valueOf() - a.data.publishedDate.valueOf()),
+        allTags: tags,
+      },
+    })),
+  ];
+}
+
+const { tag, posts, allTags } = Astro.props;
+---
+
+<Base title={`Posts tagged "${tag}"`} description={`All posts tagged with ${tag}`}>
+  <section class="tag-page">
+    <h1 class="page-title">
+      <span class="marker">▍</span>
+      {tag === "all" ? "All Tags" : `#${tag}`}
+    </h1>
+
+    <div class="tag-cloud">
+      <a href="/tags/all" class:list={["tag-pill", { active: tag === "all" }]}>all</a>
+      {allTags.sort().map((t) => (
+        <a href={`/tags/${t}`} class:list={["tag-pill", { active: t === tag }]}>
+          {t}
+        </a>
+      ))}
+    </div>
+
+    <p class="post-count">{posts.length} post{posts.length !== 1 ? "s" : ""}</p>
+
+    <div class="post-list">
+      {posts.map((post) => (
+        <PostCard post={post} />
+      ))}
+    </div>
+  </section>
+</Base>
+
+<style>
+  .tag-page {
+    padding: var(--space-xl) 0 var(--space-2xl);
+  }
+
+  .page-title {
+    font-size: 1.8rem;
+    margin-bottom: var(--space-lg);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .marker {
+    color: var(--clr-accent);
+  }
+
+  .tag-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-lg);
+  }
+
+  .tag-pill {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    padding: 0.3rem 0.7rem;
+    border-radius: 999px;
+    background: var(--clr-surface);
+    color: var(--clr-muted);
+    border: 1px solid var(--clr-border);
+    transition: all var(--transition);
+  }
+
+  .tag-pill:hover,
+  .tag-pill.active {
+    background: var(--clr-accent-dim);
+    color: var(--clr-accent);
+    border-color: var(--clr-accent);
+  }
+
+  .post-count {
+    color: var(--clr-muted);
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    margin-bottom: var(--space-lg);
+  }
+
+  .post-list {
+    display: grid;
+    gap: var(--space-sm);
+  }
+</style>

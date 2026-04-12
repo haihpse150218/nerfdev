@@ -1,0 +1,119 @@
+---
+import Base from "../layouts/Base.astro";
+import PostCard from "../components/PostCard.astro";
+import NewsletterForm from "../components/NewsletterForm.astro";
+import { getCollection } from "astro:content";
+
+const posts = await getCollection("blog", ({ data }) => !data.draft);
+const sorted = posts.sort(
+  (a, b) => b.data.publishedDate.valueOf() - a.data.publishedDate.valueOf()
+);
+const featured = sorted.filter((p) => p.data.featured);
+const recent = sorted.slice(0, 8);
+---
+
+<Base title="Home">
+  <section class="hero">
+    <div class="hero-label">// blog</div>
+    <h1>nerf<span class="accent">dev</span></h1>
+    <p class="hero-sub">We build things. We break things. We write about both.</p>
+  </section>
+
+  {featured.length > 0 && (
+    <section class="section">
+      <h2 class="section-title"><span class="marker">▍</span>Featured</h2>
+      <div class="post-grid">
+        {featured.map((post) => (
+          <PostCard post={post} featured />
+        ))}
+      </div>
+    </section>
+  )}
+
+  <section class="section">
+    <h2 class="section-title"><span class="marker">▍</span>Latest Posts</h2>
+    <div class="post-grid">
+      {recent.map((post) => (
+        <PostCard post={post} />
+      ))}
+    </div>
+    {sorted.length > 8 && (
+      <a href="/blog" class="view-all">View all posts →</a>
+    )}
+  </section>
+
+  <section class="section newsletter-section">
+    <NewsletterForm />
+  </section>
+</Base>
+
+<style>
+  .hero {
+    padding: var(--space-2xl) 0;
+    border-bottom: 1px solid var(--clr-border);
+    margin-bottom: var(--space-xl);
+  }
+
+  .hero-label {
+    font-family: var(--font-mono);
+    color: var(--clr-accent);
+    font-size: 0.85rem;
+    margin-bottom: var(--space-sm);
+  }
+
+  .hero h1 {
+    font-size: clamp(2.5rem, 8vw, 4rem);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    margin-bottom: var(--space-md);
+  }
+
+  .hero .accent {
+    color: var(--clr-accent);
+  }
+
+  .hero-sub {
+    color: var(--clr-muted);
+    font-size: 1.15rem;
+    max-width: 500px;
+  }
+
+  .section {
+    margin-bottom: var(--space-2xl);
+  }
+
+  .section-title {
+    font-size: 1.1rem;
+    margin-bottom: var(--space-lg);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .marker {
+    color: var(--clr-accent);
+  }
+
+  .post-grid {
+    display: grid;
+    gap: var(--space-md);
+  }
+
+  .view-all {
+    display: inline-block;
+    margin-top: var(--space-lg);
+    color: var(--clr-accent);
+    font-weight: 500;
+    font-size: 0.95rem;
+    transition: opacity var(--transition);
+  }
+
+  .view-all:hover {
+    opacity: 0.8;
+  }
+
+  .newsletter-section {
+    border-top: 1px solid var(--clr-border);
+    padding-top: var(--space-2xl);
+  }
+</style>

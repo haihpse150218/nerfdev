@@ -1,0 +1,86 @@
+---
+import Base from "../../layouts/Base.astro";
+import PostCard from "../../components/PostCard.astro";
+import { getCollection } from "astro:content";
+
+const posts = await getCollection("blog", ({ data }) => !data.draft);
+const sorted = posts.sort(
+  (a, b) => b.data.publishedDate.valueOf() - a.data.publishedDate.valueOf()
+);
+
+// Group by year
+const byYear = sorted.reduce(
+  (acc, post) => {
+    const year = new Date(post.data.publishedDate).getFullYear();
+    if (!acc[year]) acc[year] = [];
+    acc[year].push(post);
+    return acc;
+  },
+  {} as Record<number, typeof sorted>
+);
+
+const years = Object.keys(byYear)
+  .map(Number)
+  .sort((a, b) => b - a);
+---
+
+<Base title="Blog Archive" description="All posts on Nerf Dev">
+  <section class="archive">
+    <h1 class="page-title"><span class="marker">▍</span>All Posts</h1>
+    <p class="post-count">{sorted.length} posts</p>
+
+    {years.map((year) => (
+      <div class="year-group">
+        <h2 class="year-label">{year}</h2>
+        <div class="post-list">
+          {byYear[year].map((post) => (
+            <PostCard post={post} />
+          ))}
+        </div>
+      </div>
+    ))}
+  </section>
+</Base>
+
+<style>
+  .archive {
+    padding: var(--space-xl) 0 var(--space-2xl);
+  }
+
+  .page-title {
+    font-size: 1.8rem;
+    margin-bottom: var(--space-xs);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .marker {
+    color: var(--clr-accent);
+  }
+
+  .post-count {
+    color: var(--clr-muted);
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    margin-bottom: var(--space-xl);
+  }
+
+  .year-group {
+    margin-bottom: var(--space-xl);
+  }
+
+  .year-label {
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    color: var(--clr-muted);
+    border-bottom: 1px solid var(--clr-border);
+    padding-bottom: var(--space-sm);
+    margin-bottom: var(--space-md);
+  }
+
+  .post-list {
+    display: grid;
+    gap: var(--space-sm);
+  }
+</style>

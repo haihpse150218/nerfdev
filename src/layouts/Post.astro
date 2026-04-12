@@ -1,0 +1,175 @@
+---
+import Base from "./Base.astro";
+import TagList from "../components/TagList.astro";
+
+interface Props {
+  frontmatter: {
+    title: string;
+    description: string;
+    publishedDate: Date;
+    updatedDate?: Date;
+    author: string;
+    tags: string[];
+    minutesRead?: number;
+    cover?: { src: string; alt: string };
+    series?: { name: string; part: number };
+  };
+}
+
+const { frontmatter } = Astro.props;
+const formattedDate = new Date(frontmatter.publishedDate).toLocaleDateString("en-US", {
+  year: "numeric",
+  month: "long",
+  day: "numeric",
+});
+const updatedFormatted = frontmatter.updatedDate
+  ? new Date(frontmatter.updatedDate).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    })
+  : null;
+---
+
+<Base title={frontmatter.title} description={frontmatter.description}>
+  <article class="post">
+    {frontmatter.series && (
+      <div class="series-badge">
+        {frontmatter.series.name} — Part {frontmatter.series.part}
+      </div>
+    )}
+
+    <h1 class="post-title">{frontmatter.title}</h1>
+
+    <div class="post-meta">
+      <time datetime={frontmatter.publishedDate.toISOString()}>{formattedDate}</time>
+      {frontmatter.minutesRead && <span class="read-time">{frontmatter.minutesRead} min read</span>}
+      {updatedFormatted && <span class="updated">Updated {updatedFormatted}</span>}
+    </div>
+
+    <TagList tags={frontmatter.tags} />
+
+    {frontmatter.cover && (
+      <img
+        class="cover-image"
+        src={frontmatter.cover.src}
+        alt={frontmatter.cover.alt}
+        loading="eager"
+      />
+    )}
+
+    <div class="post-content">
+      <slot />
+    </div>
+  </article>
+</Base>
+
+<style>
+  .post {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+  }
+
+  .series-badge {
+    display: inline-block;
+    background: var(--clr-accent-dim);
+    color: var(--clr-accent);
+    padding: 0.25rem 0.75rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    font-family: "JetBrains Mono", monospace;
+  }
+
+  .post-title {
+    font-size: clamp(1.8rem, 5vw, 2.8rem);
+    line-height: 1.15;
+    margin: 0 0 1rem;
+    letter-spacing: -0.02em;
+  }
+
+  .post-meta {
+    display: flex;
+    gap: 1rem;
+    color: var(--clr-muted);
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+    font-family: "JetBrains Mono", monospace;
+  }
+
+  .post-meta .read-time::before,
+  .post-meta .updated::before {
+    content: "·";
+    margin-right: 0rem;
+  }
+
+  .cover-image {
+    width: 100%;
+    border-radius: 8px;
+    margin: 1.5rem 0;
+  }
+
+  .post-content {
+    margin-top: 2rem;
+    line-height: 1.75;
+    font-size: 1.05rem;
+  }
+
+  .post-content :global(h2) {
+    margin-top: 2.5rem;
+    margin-bottom: 0.75rem;
+    font-size: 1.5rem;
+    border-bottom: 1px solid var(--clr-border);
+    padding-bottom: 0.5rem;
+  }
+
+  .post-content :global(h3) {
+    margin-top: 2rem;
+    margin-bottom: 0.5rem;
+    font-size: 1.2rem;
+  }
+
+  .post-content :global(pre) {
+    padding: 1.25rem;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin: 1.5rem 0;
+    font-size: 0.9rem;
+    border: 1px solid var(--clr-border);
+  }
+
+  .post-content :global(code:not(pre code)) {
+    background: var(--clr-surface);
+    padding: 0.15em 0.4em;
+    border-radius: 4px;
+    font-size: 0.9em;
+    font-family: "JetBrains Mono", monospace;
+  }
+
+  .post-content :global(a) {
+    color: var(--clr-accent);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .post-content :global(blockquote) {
+    border-left: 3px solid var(--clr-accent);
+    margin: 1.5rem 0;
+    padding: 0.5rem 1.25rem;
+    color: var(--clr-muted);
+    font-style: italic;
+  }
+
+  .post-content :global(img) {
+    max-width: 100%;
+    border-radius: 8px;
+  }
+
+  .post-content :global(hr) {
+    border: none;
+    border-top: 1px solid var(--clr-border);
+    margin: 2rem 0;
+  }
+</style>

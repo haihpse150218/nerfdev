@@ -1,0 +1,52 @@
+---
+import Base from "../layouts/Base.astro";
+import NewsletterForm from "../components/NewsletterForm.astro";
+---
+
+<Base title="Newsletter" description="Subscribe to Nerf Dev — no spam, just builds.">
+  <section class="newsletter-page">
+    <h1><span class="marker">▍</span>Newsletter</h1>
+    <p class="subtitle">
+      New posts delivered straight to your inbox. No tracking pixels, no spam, unsubscribe anytime.
+    </p>
+    <p class="powered-by">
+      Powered by <a href="https://buttondown.com" target="_blank" rel="noopener">Buttondown</a> — privacy-friendly email.
+    </p>
+    <NewsletterForm />
+  </section>
+</Base>
+
+<style>
+  .newsletter-page {
+    max-width: 520px;
+    margin: 0 auto;
+    padding: var(--space-2xl) 0;
+    text-align: center;
+  }
+
+  h1 {
+    font-size: 2rem;
+    margin-bottom: var(--space-md);
+  }
+
+  .marker {
+    color: var(--clr-accent);
+  }
+
+  .subtitle {
+    color: var(--clr-muted);
+    font-size: 1.05rem;
+    margin-bottom: var(--space-sm);
+  }
+
+  .powered-by {
+    font-size: 0.8rem;
+    color: var(--clr-muted);
+    margin-bottom: var(--space-xl);
+  }
+
+  .powered-by a {
+    color: var(--clr-accent);
+    text-decoration: underline;
+  }
+</style>
