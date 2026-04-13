@@ -5,6 +5,8 @@
 #   bash scripts/export-subscribers.sh            # to stdout
 #   bash scripts/export-subscribers.sh out.csv    # to file
 #   REMOTE=0 bash scripts/export-subscribers.sh   # export from local D1 instead
+#   Backup hàng tuần
+#     bash scripts/export-subscribers.sh backups/subs-$(date+%Y-%m-%d).csv
 
 set -euo pipefail
 cd "$(dirname "$0")/.."
