@@ -1,114 +1,94 @@
 ---
-title: "Hello World — AI Nerfed the Dev. Good."
-description: "AI is nerfing the barrier to ship. Nerf Dev is where we answer what comes next — deeper performance, AI/ML patterns in production, papers worth reading."
+title: "AI Nerfed the Entry Bar. We're Here to Buff the Craft."
+description: "Nerf Dev is a technical blog about what happens after AI writes your first draft — performance, papers, and the craft that still matters."
 publishedDate: 2026-04-12
 author: "nerf-dev"
-tags: ["meta"]
+tags: ["meta", "ai", "manifesto"]
 draft: false
 featured: true
 minutesRead: 4
 ---
 
-> 🇬🇧 English first, 🇻🇳 Tiếng Việt theo sau.
+## Mọi người đều có thể code. Vậy giờ sao?
+
+Năm 2026. AI viết được code. AI generate được app. AI đọc paper, tóm tắt meeting, thậm chí tự debug chính nó.
+
+Barrier to entry đã bị **nerf** — giảm xuống gần như zero.
+
+Một người chưa từng code giờ có thể ship một landing page trong 20 phút. Một junior dev có thể scaffold cả microservice architecture trước giờ ăn trưa. AI đã **san phẳng sân chơi** — và đó là điều tốt.
+
+Nhưng đây là câu hỏi mà ít ai đặt ra: **khi ai cũng có thể build, thì cái gì tạo ra sự khác biệt?**
+
+Câu trả lời không phải là code nhiều hơn. Mà là **hiểu sâu hơn**.
 
 ---
 
-## The name / Về cái tên
+## Nerf Dev là gì?
 
-**Nerf** — a gaming term: to reduce a thing's power, to make it less dominant. In 2026, AI has *nerfed* the developer. Boilerplate is free. Glue code is free. "CRUD app in a weekend" is now CRUD app in a coffee break. The skill that used to be the moat is no longer the moat.
+**Nerf Dev** là blog kỹ thuật của một nhóm engineers không hài lòng với "it works". Chúng tôi quan tâm đến *tại sao nó works*, *khi nào nó breaks*, và *làm sao nó có thể nhanh hơn 10x*.
 
-Good. That was never the interesting part.
+Cái tên nói lên tất cả:
 
-**Nerf Dev** is where we write about the part that *wasn't* nerfed — the taste, the depth, the 1000× performance gap between code that works and code that ships at scale. We're a small crew of engineers sharing what we actually learn: patterns, pitfalls, papers.
+> **Nerf** — AI đã nerf cái barrier. Entry giờ dễ hơn bao giờ hết.
+> **Dev** — Nhưng craft thì không bao giờ bị nerf. Đó là nơi chúng tôi chơi.
 
-**Tiếng Việt:**
-
-**Nerf** — thuật ngữ gaming: giảm sức mạnh của một thứ gì đó. Năm 2026, AI đã *nerf* dev. Boilerplate free. Glue code free. "CRUD app trong 2 ngày" giờ là CRUD app trong 1 ly cafe. Cái kỹ năng từng là moat đã hết là moat.
-
-Tốt. Phần đó chưa bao giờ là phần thú vị.
-
-**Nerf Dev** là nơi bọn mình viết về phần **không bị nerf** — sự sâu, cái khẩu vị kiến trúc, cái khoảng cách 1000× giữa code chạy được và code ship được ở scale. Bọn mình là nhóm dev nhỏ chia sẻ thứ mình học thật: patterns, pitfalls, papers.
+Chúng tôi không viết "Cách dùng ChatGPT để tạo app". Chúng tôi viết về những gì xảy ra **sau khi AI viết xong bản draft đầu tiên** — optimize, scale, debug những edge cases mà AI không nhìn thấy, và hiểu những research papers đang định hình tương lai.
 
 ---
 
-## What the blog is for / Blog này viết gì
+## Chúng tôi viết về gì?
 
-### 1. Performance — the part AI can't vibe-check
-### 1. Performance — thứ AI không "cảm" được
+### Performance Engineering
+AI giúp bạn viết code. Chúng tôi giúp bạn hiểu tại sao code đó chạy chậm. Từ memory profiling đến inference optimization, từ database query tuning đến hệ thống xử lý triệu requests/giây — performance là ngôn ngữ mà chúng tôi nói.
 
-LLMs are great at "make it work." They're weak at "make it 10× faster," "cut p99 in half," "drop infra cost 60%." That's where we live.
+### AI/ML trong thực chiến
+Không phải tutorial "Hello World với TensorFlow". Chúng tôi viết về production ML pipelines, agent workflows thực tế, fine-tuning strategies mà papers không nói, và những gotchas khi deploy models vào môi trường thật. Những thứ mà bạn chỉ học được sau khi đã burn tiền và thời gian.
 
-LLMs giỏi "làm cho nó chạy." Yếu ở "làm nhanh lên 10 lần," "giảm p99 còn một nửa," "cắt 60% chi phí infra." Đây là sân của bọn mình.
+### Paper Breakdowns
+Mỗi tuần có hàng trăm papers mới trên arXiv. Chúng tôi đọc, chắt lọc, và chia sẻ những papers thực sự đáng đọc — với context thực tế, không phải abstract rephrasing. Từ state-of-the-art reasoning models đến novel privacy-preserving techniques, chúng tôi bridge gap giữa research và production.
 
-### 2. AI/ML in production — not tutorials
-### 2. AI/ML trong production — không phải tutorial
+### Systems & Infrastructure
+Kubernetes configs mà AI generate trông đẹp cho đến khi cluster crash lúc 3 giờ sáng. Chúng tôi chia sẻ kiến trúc thực, post-mortems thực, và những bài học chỉ có được khi đã vận hành systems dưới áp lực thật.
 
-Bedrock Agent thật, RAG pipeline thật, prompt evals thật, the moment where the demo works and the prod load breaks it. Anonymized when needed.
-
-Bedrock Agent thật, RAG pipeline thật, prompt evals thật, cái khoảnh khắc demo chạy mà đưa lên prod tải là gãy. Anonymize khi cần.
-
-### 3. Papers worth reading / Paper đáng đọc
-
-Not a paper-reading club. We summarize only when a paper changed something we build. Signal over completeness.
-
-Không phải câu lạc bộ đọc paper. Chỉ tóm tắt khi có paper nào đó đổi được cách bọn mình build. Signal > completeness.
-
-### 4. Tooling that earns its keep / Tooling đáng tiền
-
-CLIs, dotfiles, shell scripts, coding agents — anything saving 5+ minutes a day. If it saves 5 minutes, it saves a workday a quarter.
-
-CLIs, dotfiles, shell scripts, coding agents — thứ nào tiết kiệm được 5 phút/ngày. Tiết kiệm 5 phút = tiết kiệm nửa ngày làm việc mỗi quý.
+### Emerging Tech
+ZK proofs, on-chain AI agents, edge computing, privacy-first architectures — những vùng đất mà AI assistant chưa có đủ training data để giúp bạn. Đó là nơi kinh nghiệm con người vẫn là king.
 
 ---
 
-## Writing principles / Nguyên tắc viết
+## Triết lý của chúng tôi
 
-1. **Run it before writing it.** No conceptual hand-waving. / **Chạy trước, viết sau.** Không hand-wave khái niệm.
-2. **Short when short works.** A 400-word TIL beats a 5,000-word survey. / **Ngắn khi ngắn đủ.** TIL 400 chữ > survey 5000 chữ.
-3. **Opinions, not "it depends."** Pick the side, defend it, welcome the pushback. / **Có opinion, không "it depends."** Chọn 1 phía, bảo vệ nó, welcome pushback.
-4. **Runnable artifacts.** File paths, commands, outputs. Paste-ready. / **Artifacts chạy được.** File path, command, output. Paste vào là chạy.
+**AI là đồng đội, không phải thay thế.** Chúng tôi dùng AI mỗi ngày — từ Claude CLI quản lý chính cái blog này, đến Copilot trong editor, đến LLMs chạy trong production pipelines. Nhưng chúng tôi không ảo tưởng.
 
----
+Có một khoảng cách rất lớn giữa **"AI có thể generate"** và **"production-ready"**. Blog này tồn tại ở khoảng cách đó.
 
-## The stack running this blog / Stack chạy blog này
+Mỗi bài viết ở đây follow một nguyên tắc đơn giản:
 
-The blog is its own first post. Meta, but that's the point.
+> *Nếu AI có thể tự viết bài này tốt hơn chúng tôi, thì bài này không đáng publish.*
 
-Blog là bài viết đầu tiên của chính nó. Meta, nhưng đó là ý đồ.
-
-| Layer | Pick | Why / Lý do |
-|-------|------|-------------|
-| Framework | **Astro 5** (`output: server`) | Static-first + Markdown-native + island hydration. Fast builds. |
-| Hosting | **Cloudflare Pages** | Edge, free tier, ship via `git push`. |
-| CI/CD | **GitHub Actions** + `wrangler pages deploy` | Explicit token control; skipped CF's Git integration after a stale-build-token incident. |
-| Newsletter | **Buttondown** + **Cloudflare D1** | Buttondown → delivery + compliance. D1 → owned subscriber copy via parallel dual-call. |
-| Content | Markdown + Git | No CMS. Files are the database. |
-| "Editor" | **Claude Code** CLI | `claude "new post: ..."` then edit-commit-push. Beats any WYSIWYG we've used. |
-
-Every `src/content/blog/*.md` push → GH Actions build → Pages deploy → live in ~90s. No admin panel. No staging magic. Git is the state.
-
-Every decision here will get its own deep-dive post soon: why `output: server` for near-static, why dual-call instead of worker-to-Buttondown, why we rolled custom D1 on top of Buttondown.
-
-Mỗi push `src/content/blog/*.md` → GH Actions build → Pages deploy → live sau ~90s. Không admin panel. Không staging magic. Git là state.
-
-Mỗi quyết định trên sẽ có bài mổ xẻ riêng: tại sao `output: server` cho blog gần-như-static, tại sao dual-call thay vì worker-to-Buttondown, tại sao build thêm D1 trên Buttondown.
+Chúng tôi viết những thứ cần context, cần kinh nghiệm bị burn, cần opinions được forge qua production incidents lúc nửa đêm. Không filler, không listicles, không regurgitated docs.
 
 ---
 
-## Subscribe
+## Ai đứng sau Nerf Dev?
 
-Form at [/newsletter](/newsletter). Buttondown delivers, D1 keeps our copy. No spam, no data selling, 1-click unsubscribe. **Starting cadence: 1–2 posts/week.**
+Một nhóm nhỏ engineers và builders — những người đã ship code trước khi có GitHub Copilot và vẫn đang ship code nhanh hơn nhờ AI. Chúng tôi đến từ backgrounds khác nhau: backend systems, AI/ML, blockchain, security research — nhưng chia sẻ chung một obsession: **làm cho mọi thứ chạy tốt hơn**.
 
-Prefer readers? [RSS is here](/rss.xml).
-
-**Tiếng Việt:**
-
-Form ở [/newsletter](/newsletter). Buttondown delivery, D1 giữ copy. Không spam, không bán data, unsubscribe 1 click. **Tần suất khởi đầu: 1–2 bài/tuần.**
-
-Thích dùng reader? [RSS đây](/rss.xml).
+Chúng tôi không phải influencers. Chúng tôi không bán course. Blog này là nơi chúng tôi ghi lại hành trình — raw, technical, và hopefully useful cho những ai đang trên cùng con đường.
 
 ---
 
-AI nerfed the dev. We're raising the ceiling back. / AI đã nerf dev. Bọn mình nâng trần lên lại.
+## Bắt đầu từ đâu?
 
-See you in the next one. / Hẹn bài tới.
+Nếu bạn mới đến, hãy bắt đầu với bất kỳ bài nào có tag bạn quan tâm. Mọi thứ ở đây đều standalone — không cần đọc theo thứ tự.
+
+Muốn nhận bài mới? [Đăng ký newsletter](/newsletter) — privacy-first, không tracking pixels, không spam. Mỗi email là một bài viết đáng đọc, hoặc chúng tôi không gửi.
+
+RSS cũng có nếu bạn oldschool: [/rss.xml](/rss.xml)
+
+---
+
+*AI nerfed the barrier to entry. Good. Giờ thì chúng ta có thể tập trung vào thứ thực sự quan trọng — the craft itself.*
+
+*Let's build something that doesn't just work. Let's build something that works **well**.*
+
+— **Nerf Dev Team**
