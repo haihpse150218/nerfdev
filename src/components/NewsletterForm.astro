@@ -35,27 +35,23 @@ const BUTTONDOWN_USERNAME = "nerfdev";
     <button type="submit" class="newsletter-btn" data-newsletter-btn>Subscribe</button>
   </form>
 
-  <!-- Hidden Buttondown submit target. Form POSTs here via target=iframe so the
-       user stays on the page. Buttondown's fingerprint validation runs on their
-       side when the POST lands. We never read this iframe (cross-origin). -->
+  <!-- Buttondown submit target is a new tab (target=_blank) because
+       Buttondown serves a Turnstile challenge on the response page when
+       "Embed fingerprinting" is enabled. A hidden iframe can't show that
+       challenge to the user, so we open it as a new tab where the user can
+       complete verification and see the "check your inbox" confirmation. -->
   <form
     data-bd-form
     action={`https://buttondown.com/api/emails/embed-subscribe/${BUTTONDOWN_USERNAME}`}
     method="post"
-    target="bd-iframe"
+    target="_blank"
+    rel="noopener"
     hidden
   >
     <input type="email" name="email" data-bd-email />
     <input type="hidden" name="tag" value="from-blog" />
     <input type="hidden" name="embed" value="1" />
   </form>
-  <iframe
-    name="bd-iframe"
-    class="bd-iframe"
-    tabindex="-1"
-    aria-hidden="true"
-    title="Newsletter subscription result"
-  ></iframe>
 
   <p class="newsletter-status" data-newsletter-status role="status" aria-live="polite"></p>
   <p class="newsletter-note">
@@ -128,7 +124,8 @@ const BUTTONDOWN_USERNAME = "nerfdev";
 
       if (dbRes.ok) {
         form.style.display = "none";
-        status.textContent = "Thanks! Check your inbox to confirm.";
+        status.textContent =
+          "Thanks! A new tab opened — verify there, then check your inbox to confirm.";
         status.classList.add("is-success");
       } else {
         const code = dbRes.error ?? "INTERNAL_ERROR";
@@ -214,15 +211,6 @@ const BUTTONDOWN_USERNAME = "nerfdev";
     height: 0;
     width: 0;
     pointer-events: none;
-  }
-
-  .bd-iframe {
-    position: absolute;
-    left: -9999px;
-    top: -9999px;
-    width: 0;
-    height: 0;
-    border: 0;
   }
 
   .newsletter-status {
