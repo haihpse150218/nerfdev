@@ -1,9 +1,10 @@
 import type { APIRoute } from "astro";
 
-// Bindings provided by Cloudflare Pages runtime (see astro.config.mjs adapter)
+// D1 + rate-limit binding provided by Cloudflare Pages runtime.
+// Buttondown subscribe is handled by the frontend in parallel (hidden iframe
+// form POST with fingerprint). This endpoint only owns D1 tracking.
 type Env = {
   DB: D1Database;
-  BUTTONDOWN_API_KEY?: string;
   RATE_LIMITER?: { limit: (opts: { key: string }) => Promise<{ success: boolean }> };
 };
 
@@ -48,51 +49,13 @@ export const POST: APIRoute = async ({ request, locals }) => {
   } catch (e) {
     const msg = String(e);
     if (msg.includes("UNIQUE") || msg.includes("2067")) {
-      return json({ ok: true, message: "Already subscribed — check your inbox." });
+      return json({ ok: true, message: "Already subscribed." });
     }
     console.error("D1 insert failed:", msg);
     return json({ ok: false, error: "INTERNAL_ERROR" }, 500);
   }
 
-  if (!env.BUTTONDOWN_API_KEY) {
-    console.warn("BUTTONDOWN_API_KEY missing — marking subscriber as buttondown_failed");
-    await env.DB
-      .prepare("UPDATE subscribers SET status = 'buttondown_failed' WHERE id = ?")
-      .bind(id)
-      .run();
-    return json({ ok: true, message: "Thanks! We'll retry shortly." });
-  }
-
-  try {
-    const bdRes = await fetch("https://api.buttondown.com/v1/subscribers", {
-      method: "POST",
-      headers: {
-        Authorization: `Token ${env.BUTTONDOWN_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email_address: email }),
-    });
-
-    if (!bdRes.ok) {
-      const errText = await bdRes.text();
-      throw new Error(`Buttondown ${bdRes.status}: ${errText}`);
-    }
-
-    const bdData = (await bdRes.json()) as { id: string };
-    await env.DB
-      .prepare("UPDATE subscribers SET buttondown_id = ? WHERE id = ?")
-      .bind(bdData.id, id)
-      .run();
-
-    return json({ ok: true, message: "Check your inbox to confirm." });
-  } catch (e) {
-    console.error("Buttondown forward failed:", String(e));
-    await env.DB
-      .prepare("UPDATE subscribers SET status = 'buttondown_failed' WHERE id = ?")
-      .bind(id)
-      .run();
-    return json({ ok: true, message: "Thanks! We'll retry shortly." });
-  }
+  return json({ ok: true, message: "Saved." });
 };
 
 function isValidEmail(s: string): boolean {

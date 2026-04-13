@@ -1,11 +1,19 @@
 ---
-// Newsletter subscribe form — posts to /api/subscribe (Pages Function)
+// Newsletter subscribe form — fires 2 calls in parallel on submit:
+//   (a) POST /api/subscribe  → our Cloudflare Worker → D1 (tracking)
+//   (b) POST buttondown.com/api/emails/embed-subscribe/<name>
+//       via hidden <form target=iframe> — Buttondown handles fingerprint
+//       + double opt-in on their end
+// No waiting between them; UI shows success immediately after both fire.
 // See docs/superpowers/specs/2026-04-13-newsletter-subscriber-backend-design.md
+
+const BUTTONDOWN_USERNAME = "nerfdev";
 ---
 
 <div class="newsletter-box" data-newsletter>
   <h3 class="newsletter-title">Stay in the loop</h3>
   <p class="newsletter-desc">New posts, no spam. Unsubscribe anytime.</p>
+
   <form class="newsletter-form" data-newsletter-form novalidate>
     <input
       type="email"
@@ -26,6 +34,29 @@
     />
     <button type="submit" class="newsletter-btn" data-newsletter-btn>Subscribe</button>
   </form>
+
+  <!-- Hidden Buttondown submit target. Form POSTs here via target=iframe so the
+       user stays on the page. Buttondown's fingerprint validation runs on their
+       side when the POST lands. We never read this iframe (cross-origin). -->
+  <form
+    data-bd-form
+    action={`https://buttondown.com/api/emails/embed-subscribe/${BUTTONDOWN_USERNAME}`}
+    method="post"
+    target="bd-iframe"
+    hidden
+  >
+    <input type="email" name="email" data-bd-email />
+    <input type="hidden" name="tag" value="from-blog" />
+    <input type="hidden" name="embed" value="1" />
+  </form>
+  <iframe
+    name="bd-iframe"
+    class="bd-iframe"
+    tabindex="-1"
+    aria-hidden="true"
+    title="Newsletter subscription result"
+  ></iframe>
+
   <p class="newsletter-status" data-newsletter-status role="status" aria-live="polite"></p>
   <p class="newsletter-note">
     Powered by <a href="https://buttondown.com" target="_blank" rel="noopener">Buttondown</a>
@@ -44,48 +75,64 @@
 
   document.querySelectorAll<HTMLFormElement>("[data-newsletter-form]").forEach((form) => {
     const box = form.closest("[data-newsletter]") as HTMLElement | null;
+    if (!box) return;
     const btn = form.querySelector<HTMLButtonElement>("[data-newsletter-btn]");
-    const status = box?.querySelector<HTMLElement>("[data-newsletter-status]");
+    const status = box.querySelector<HTMLElement>("[data-newsletter-status]");
+    const bdForm = box.querySelector<HTMLFormElement>("[data-bd-form]");
+    const bdEmail = box.querySelector<HTMLInputElement>("[data-bd-email]");
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
-      if (!btn || !status) return;
+      if (!btn || !status || !bdForm || !bdEmail) return;
 
       const fd = new FormData(form);
       const email = String(fd.get("email") ?? "").trim();
       const website = String(fd.get("website") ?? "");
+
+      // Client-side honeypot short-circuit (server also enforces)
+      if (website) {
+        status.textContent = ERROR_MESSAGES.HONEYPOT_TRIGGERED;
+        status.classList.add("is-error");
+        return;
+      }
 
       status.textContent = "";
       status.classList.remove("is-error", "is-success");
       btn.disabled = true;
       btn.textContent = "Sending…";
 
-      try {
-        const res = await fetch("/api/subscribe", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email,
-            website,
-            source: window.location.pathname,
-          }),
-        });
-        const data = (await res.json()) as { ok: boolean; message?: string; error?: string };
+      // --- Fire both in parallel, don't await Buttondown ----------------
 
-        if (data.ok) {
-          status.textContent = data.message ?? "Subscribed.";
-          status.classList.add("is-success");
-          form.reset();
-          form.style.display = "none";
-        } else {
-          const code = data.error ?? "INTERNAL_ERROR";
-          status.textContent = ERROR_MESSAGES[code] ?? ERROR_MESSAGES.INTERNAL_ERROR;
-          status.classList.add("is-error");
-          btn.disabled = false;
-          btn.textContent = "Subscribe";
-        }
-      } catch {
-        status.textContent = ERROR_MESSAGES.NETWORK;
+      // (a) D1 tracking — fire-and-forget, but report client-side errors inline
+      const dbPromise = fetch("/api/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          website,
+          source: window.location.pathname,
+        }),
+        keepalive: true,
+      })
+        .then((r) => r.json() as Promise<{ ok: boolean; error?: string; message?: string }>)
+        .catch(() => ({ ok: false, error: "NETWORK" as const }));
+
+      // (b) Buttondown subscribe — HTML form POST to hidden iframe; fingerprint
+      // collection happens on Buttondown's server when the request arrives.
+      bdEmail.value = email;
+      bdForm.submit();
+
+      // Wait only on our own API; Buttondown iframe response is cross-origin
+      // and unreadable, so we assume success after firing.
+      const dbRes = await dbPromise;
+
+      if (dbRes.ok) {
+        form.style.display = "none";
+        status.textContent = "Thanks! Check your inbox to confirm.";
+        status.classList.add("is-success");
+      } else {
+        const code = dbRes.error ?? "INTERNAL_ERROR";
+        status.textContent = ERROR_MESSAGES[code] ?? ERROR_MESSAGES.INTERNAL_ERROR;
         status.classList.add("is-error");
         btn.disabled = false;
         btn.textContent = "Subscribe";
@@ -167,6 +214,15 @@
     height: 0;
     width: 0;
     pointer-events: none;
+  }
+
+  .bd-iframe {
+    position: absolute;
+    left: -9999px;
+    top: -9999px;
+    width: 0;
+    height: 0;
+    border: 0;
   }
 
   .newsletter-status {
