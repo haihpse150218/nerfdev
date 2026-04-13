@@ -1,36 +1,60 @@
 ---
 title: "Hello World — Nerf Dev is Live"
-description: "First post. Why we started this blog and what to expect."
+description: "Tại sao mình dựng blog này, stack đằng sau nó, và thứ bạn có thể chờ đọc ở đây."
 publishedDate: 2026-04-12
 author: "nerf-dev"
 tags: ["meta"]
 draft: false
 featured: true
-minutesRead: 2
+minutesRead: 3
 ---
 
-## Why Nerf Dev?
+## Ai đứng sau
 
-We build things. We break things. We write about both.
+Mình là **Hoang Phi Hai** — Senior Back-End Developer đang lead mảng payment trên **FE ONLINE 2.0** (FE CREDIT / VPBank Group), ngày trước làm Python/Node cho các hệ thống Japan/Singapore ở FPT Software. Gần đây top 20 Generative AI hackathon của VPBank với một IaC Drift Detection chạy trên Bedrock Agent.
 
-This blog is our space to share what we're learning — from shipping side projects to diving deep into AI, Web3, and everything in between.
+Nerf Dev là chỗ mình viết những thứ **không lên spec công ty** — các quyết định kiến trúc nhỏ, lỗi production thật, công cụ tự làm, và mấy lần thử-sai khi đụng phải AI/serverless/edge compute.
 
-## What to Expect
+## Nguyên tắc viết
 
-Posts here will be direct, technical, and opinionated. No filler content, no "10 reasons why" listicles. Just real experiences from real builds.
+Bốn dòng:
 
-Topics we'll cover:
+1. **Viết từ trải nghiệm thật.** Không từ điển hoá khái niệm — nếu mình chưa chạy được code hoặc chưa break nó, mình không viết.
+2. **Ngắn khi có thể.** TIL 500 chữ > "ultimate guide" 5000 chữ. Nếu bài dài, đó là vì nó cần dài.
+3. **Có opinion.** "It depends" là câu trả lời lười. Nếu có 2 hướng, nói rõ hướng mình chọn và tại sao.
+4. **Kèm code chạy được.** File path, command, output — đọc xong paste được vào terminal.
 
-- AI/ML pipelines and agent workflows
-- Web3, ZK proofs, and privacy tech
-- DevOps, CLI tools, and automation
-- Side project post-mortems
-- Tools and frameworks we actually use
+## Stack chạy blog này
 
-## The Stack
+Bản thân blog là một bài viết sống:
 
-This blog runs on Astro, deploys to Cloudflare Pages, and is managed entirely through Claude CLI. No CMS, no database — just Markdown files and git.
+| Layer | Chọn | Lý do |
+|-------|------|-------|
+| Framework | **Astro 5** (output: server) | Static-first, MD native, island architecture, build nhanh |
+| Hosting | **Cloudflare Pages** | Free tier edge, zero-config, ship qua `git push` |
+| CI/CD | **GitHub Actions** + `wrangler pages deploy` | Control token rõ ràng (bỏ CF Git integration vì dính bug build token) |
+| Content | Markdown + Git | Không CMS, không DB content — file là source of truth |
+| Newsletter | **Buttondown** + **Cloudflare D1** | Buttondown lo delivery/compliance; D1 là copy riêng của mình (dual-call từ browser, song song) |
+| "CMS" | **Claude Code** | CLI là cái viết được, grep được, commit được — đỡ hơn WordPress nhiều |
 
-Stay tuned. Subscribe to the [newsletter](/newsletter) if you want posts in your inbox.
+Mỗi lần push `src/content/blog/*.md` → GH Actions build → deploy → live sau ~90s. Không có admin panel. Không có staging magic. Git là state.
 
-Let's build.
+Sắp tới sẽ có bài mổ xẻ từng quyết định: tại sao dual-call thay vì để worker proxy tới Buttondown, tại sao dùng `output: server` cho blog gần-như-static, v.v.
+
+## Sẽ viết về
+
+- **Back-end & infra**: serverless patterns trên AWS Lambda + SQS + DynamoDB, so sánh với Cloudflare Workers + D1 + Queues — thực tế khi phải migrate
+- **Payment systems**: những lesson từ 1M+ transactions/day, idempotency, retry logic, reconciliation
+- **AI/LLM trong production**: Bedrock Agent + Knowledge Base, prompt engineering cho bài toán real, coding agent ở nhịp làm việc hằng ngày
+- **Tooling**: shell scripts thật, CLI workflows, dotfile hackery — cái nào tiết kiệm được 5 phút/ngày
+- **Post-mortems**: lỗi prod thật (anonymized), root cause, cái mình học
+
+Không viết: SEO chasing, listicle, tutorial copy từ doc official.
+
+## Subscribe nếu muốn đọc
+
+Form ở [/newsletter](/newsletter). Dưới nó là Buttondown lo delivery + Cloudflare D1 lưu copy. Không spam, không bán data, unsubscribe 1 click. Tần suất ước lượng: 1–2 bài/tuần lúc đầu, có thể thay đổi.
+
+Hoặc subscribe [RSS](/rss.xml) nếu bạn là người chưa rời reader feed.
+
+Hẹn bài sau.
