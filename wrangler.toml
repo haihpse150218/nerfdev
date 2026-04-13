@@ -1,3 +1,10 @@
 name = "nerf-dev-blog"
 compatibility_date = "2024-12-01"
+compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = "./dist"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "nerfdev-subscribers"
+database_id = "df5bed82-1f4b-42ec-834e-36b4a501a529"
+migrations_dir = "migrations"

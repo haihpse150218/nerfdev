@@ -58,10 +58,15 @@ The Nerf Dev Blog currently embeds a Buttondown HTML form (`src/components/Newsl
                           └───────────────────────┘ └────────────────┘ └─────────────────────┘
 ```
 
-**Platform choice — Pages Functions, not a standalone Worker.**
-The blog is already deployed as a Cloudflare Pages project (`nerf-dev-blog`). Pages Functions let us colocate an API route (`functions/api/subscribe.ts`) with the static site, share the same deploy pipeline (no extra `wrangler.toml`, no separate domain), and bind D1/secrets/rate-limiters via the same Pages project settings.
+**Platform choice — Astro API route with Cloudflare adapter (SSR).**
+First iteration of this spec used a Pages Function under `functions/api/subscribe.ts`, but the Astro Cloudflare adapter produces `dist/_worker.js` that intercepts all routes — Pages Functions in the project root are bypassed. The idiomatic path with Astro + Cloudflare is:
 
-Reference: <https://developers.cloudflare.com/pages/functions/routing/>
+- `output: "server"` in `astro.config.mjs`
+- Mark every static page with `export const prerender = true` (keeps them as pre-built HTML)
+- Add the dynamic endpoint at `src/pages/api/subscribe.ts` as an Astro `APIRoute` (`export const POST`)
+- Cloudflare bindings (D1, env vars) are accessed via `locals.runtime.env`
+
+Reference: <https://docs.astro.build/en/guides/integrations-guide/cloudflare/#cloudflare-runtime>
 
 ---
 
@@ -144,16 +149,20 @@ Content-Type: application/json
 
 ## 6. Worker Logic (Pages Function)
 
-### 6.1 File: `functions/api/subscribe.ts`
+### 6.1 File: `src/pages/api/subscribe.ts`
 
 ```ts
-interface Env {
-  DB: D1Database;
-  BUTTONDOWN_API_KEY: string;
-  RATE_LIMITER: RateLimit;  // Rate Limiting binding
-}
+import type { APIRoute } from "astro";
 
-export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
+type Env = {
+  DB: D1Database;
+  BUTTONDOWN_API_KEY?: string;
+  RATE_LIMITER?: { limit: (opts: { key: string }) => Promise<{ success: boolean }> };
+};
+
+export const POST: APIRoute = async ({ request, locals }) => {
+  const env = (locals as unknown as { runtime?: { env: Env } }).runtime?.env;
+  if (!env?.DB) return json({ ok: false, error: "INTERNAL_ERROR" }, 500);
   // 1) Parse body
   const body = await request.json().catch(() => null) as
     | { email?: string; website?: string; source?: string }
@@ -355,13 +364,14 @@ npx wrangler d1 migrations apply nerfdev-subscribers --remote
 # existing
 name = "nerf-dev-blog"
 compatibility_date = "2024-12-01"
+compatibility_flags = ["nodejs_compat"]   # required — Astro SSR bundles `sharp`
 pages_build_output_dir = "./dist"
 
-# NEW — D1 binding (Pages)
 [[d1_databases]]
 binding = "DB"
 database_name = "nerfdev-subscribers"
 database_id = "<fill-from-wrangler-d1-create-output>"
+migrations_dir = "migrations"
 
 # Rate Limiting binding: configured via Pages dashboard (see §8.2)
 ```
@@ -447,3 +457,4 @@ Tracked here so they aren't lost:
 | Date | Change |
 |------|--------|
 | 2026-04-13 | Initial draft. All 5 design decisions captured. |
+| 2026-04-13 | Post-implementation revision: switched from Pages Function (`functions/api/`) to Astro API route (`src/pages/api/`) because Astro's `_worker.js` intercepts all routes. Added `output: "server"` + per-page `prerender = true`. Added `nodejs_compat` flag. |

@@ -317,6 +317,77 @@ claude "new post: Hello World --tags=meta"
 
 ---
 
+## Deployment Pipeline
+
+**Architecture**: GitHub Actions → Cloudflare Pages (single deploy path, no CF Git integration).
+
+### Why GitHub Actions (not CF Pages Git integration)
+- CF Pages built-in Git integration uses an internal "build token" that gets invalidated when any API token on the account is rolled → breaks silently.
+- GitHub Actions uses explicit `CLOUDFLARE_API_TOKEN` secret → rotations are controlled, errors are visible.
+- **Rule**: Never enable both. If CF Pages Git integration gets auto-created, disconnect it.
+
+### Required Setup
+
+**GitHub Secrets** (`Settings → Secrets and variables → Actions`):
+| Secret | Value |
+|--------|-------|
+| `CLOUDFLARE_API_TOKEN` | Custom token, scopes below |
+| `CLOUDFLARE_ACCOUNT_ID` | `265ff09d8fea5c6acec47bde42cc8843` |
+
+**CF API Token scopes** (create at https://dash.cloudflare.com/profile/api-tokens):
+- `Account` → `Cloudflare Pages` → `Edit`
+- `Account` → `Account Settings` → `Read`
+- `User` → `User Details` → `Read`
+- Account Resources: Include → *your account*
+
+**Local `.env`** (for `wrangler` CLI usage):
+```bash
+CLOUDFLARE_API_TOKEN=<same-or-separate-token>
+CLOUDFLARE_ACCOUNT_ID=265ff09d8fea5c6acec47bde42cc8843
+```
+
+### CF Pages Project
+- Project name: **`nerf-dev-blog`** (must match `--project-name` in `.github/workflows/deploy.yml`)
+- Production branch: `main`
+- Default URL: https://nerf-dev-blog.pages.dev/
+
+**Recreate project if deleted**:
+```bash
+npx wrangler pages project create nerf-dev-blog --production-branch=main --env-file=.env
+```
+
+**List projects**:
+```bash
+npx wrangler pages project list --env-file=.env
+```
+
+### Deploy Flow
+1. Push to `main` → `.github/workflows/deploy.yml` triggers
+2. GH Actions: `npm ci` → `npm run build` → `wrangler pages deploy dist --project-name=nerf-dev-blog`
+3. CF Pages serves from `dist/`
+4. Watch runs at: https://github.com/haihpse150218/nerfdev/actions
+
+**Manual trigger (no code change)**:
+```bash
+git commit --allow-empty -m "chore: trigger deploy"
+git push origin main
+```
+
+### Troubleshooting
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| `Authentication error [code: 10000]` | Token lacks `Pages:Edit` scope, or wrong env var name | Recreate token with correct scopes; ensure env var is `CLOUDFLARE_API_TOKEN` (not `CLOUDFLARE_CLAUDE_TOKEN` or similar) |
+| `Project not found [code: 8000007]` | Project deleted or name mismatch | Recreate via `wrangler pages project create`, or fix `--project-name` in workflow |
+| `build token has been deleted or rolled` | CF Pages Git integration internal token invalidated | Disconnect CF Pages Git integration; use GH Actions only |
+
+### Security Rules
+- **Never paste tokens into chat/IDE selections** — they end up in AI context & logs.
+- Rotate any token that was displayed, even briefly.
+- Tokens with `cfut_` prefix are user/integration tokens — NOT valid for Wrangler. Wrangler needs standard API tokens created via "Create Custom Token".
+
+---
+
 ## Tech Decisions & Rationale
 
 | Choice | Why |

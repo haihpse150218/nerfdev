@@ -1,29 +1,98 @@
 ---
-// Buttondown form — no JS needed, pure HTML form POST
+// Newsletter subscribe form — posts to /api/subscribe (Pages Function)
+// See docs/superpowers/specs/2026-04-13-newsletter-subscriber-backend-design.md
 ---
 
-<div class="newsletter-box">
+<div class="newsletter-box" data-newsletter>
   <h3 class="newsletter-title">Stay in the loop</h3>
   <p class="newsletter-desc">New posts, no spam. Unsubscribe anytime.</p>
-  <form
-    action="https://buttondown.com/api/emails/embed-subscribe/nerfdev"
-    method="post"
-    target="_blank"
-    class="newsletter-form"
-  >
+  <form class="newsletter-form" data-newsletter-form novalidate>
     <input
       type="email"
       name="email"
       placeholder="your@email.com"
       required
       class="newsletter-input"
+      autocomplete="email"
     />
-    <button type="submit" class="newsletter-btn">Subscribe</button>
+    <!-- Honeypot: humans never see this. Bots that fill every input get rejected. -->
+    <input
+      type="text"
+      name="website"
+      tabindex="-1"
+      autocomplete="off"
+      class="honeypot"
+      aria-hidden="true"
+    />
+    <button type="submit" class="newsletter-btn" data-newsletter-btn>Subscribe</button>
   </form>
+  <p class="newsletter-status" data-newsletter-status role="status" aria-live="polite"></p>
   <p class="newsletter-note">
     Powered by <a href="https://buttondown.com" target="_blank" rel="noopener">Buttondown</a>
   </p>
 </div>
+
+<script>
+  const ERROR_MESSAGES: Record<string, string> = {
+    INVALID_EMAIL: "That doesn't look like a valid email.",
+    RATE_LIMITED: "Too many tries — please wait a minute.",
+    MISSING_FIELDS: "Something went wrong. Please try again.",
+    HONEYPOT_TRIGGERED: "Something went wrong. Please try again.",
+    INTERNAL_ERROR: "Something went wrong. Please try again.",
+    NETWORK: "Network error — please try again.",
+  };
+
+  document.querySelectorAll<HTMLFormElement>("[data-newsletter-form]").forEach((form) => {
+    const box = form.closest("[data-newsletter]") as HTMLElement | null;
+    const btn = form.querySelector<HTMLButtonElement>("[data-newsletter-btn]");
+    const status = box?.querySelector<HTMLElement>("[data-newsletter-status]");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!btn || !status) return;
+
+      const fd = new FormData(form);
+      const email = String(fd.get("email") ?? "").trim();
+      const website = String(fd.get("website") ?? "");
+
+      status.textContent = "";
+      status.classList.remove("is-error", "is-success");
+      btn.disabled = true;
+      btn.textContent = "Sending…";
+
+      try {
+        const res = await fetch("/api/subscribe", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email,
+            website,
+            source: window.location.pathname,
+          }),
+        });
+        const data = (await res.json()) as { ok: boolean; message?: string; error?: string };
+
+        if (data.ok) {
+          status.textContent = data.message ?? "Subscribed.";
+          status.classList.add("is-success");
+          form.reset();
+          form.style.display = "none";
+        } else {
+          const code = data.error ?? "INTERNAL_ERROR";
+          status.textContent = ERROR_MESSAGES[code] ?? ERROR_MESSAGES.INTERNAL_ERROR;
+          status.classList.add("is-error");
+          btn.disabled = false;
+          btn.textContent = "Subscribe";
+        }
+      } catch {
+        status.textContent = ERROR_MESSAGES.NETWORK;
+        status.classList.add("is-error");
+        btn.disabled = false;
+        btn.textContent = "Subscribe";
+      }
+    });
+  });
+</script>
 
 <style>
   .newsletter-box {
@@ -81,8 +150,37 @@
     transition: background var(--transition);
   }
 
-  .newsletter-btn:hover {
+  .newsletter-btn:hover:not(:disabled) {
     background: var(--clr-accent-hover);
+  }
+
+  .newsletter-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .honeypot {
+    position: absolute;
+    left: -9999px;
+    top: -9999px;
+    opacity: 0;
+    height: 0;
+    width: 0;
+    pointer-events: none;
+  }
+
+  .newsletter-status {
+    margin-top: var(--space-sm);
+    font-size: 0.85rem;
+    min-height: 1.1em;
+  }
+
+  .newsletter-status.is-error {
+    color: #e06c75;
+  }
+
+  .newsletter-status.is-success {
+    color: var(--clr-accent);
   }
 
   .newsletter-note {

@@ -5,7 +5,7 @@ import mdx from "@astrojs/mdx";
 
 export default defineConfig({
   site: "https://nerfdev.xyz",
-  output: "static",
+  output: "server",
   adapter: cloudflare(),
   integrations: [
     sitemap(),
