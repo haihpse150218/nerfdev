@@ -9,12 +9,6 @@ featured: true
 minutesRead: 3
 ---
 
-## Ai đứng sau
-
-Mình là **Hoang Phi Hai** — Senior Back-End Developer đang lead mảng payment trên **FE ONLINE 2.0** (FE CREDIT / VPBank Group), ngày trước làm Python/Node cho các hệ thống Japan/Singapore ở FPT Software. Gần đây top 20 Generative AI hackathon của VPBank với một IaC Drift Detection chạy trên Bedrock Agent.
-
-Nerf Dev là chỗ mình viết những thứ **không lên spec công ty** — các quyết định kiến trúc nhỏ, lỗi production thật, công cụ tự làm, và mấy lần thử-sai khi đụng phải AI/serverless/edge compute.
-
 ## Nguyên tắc viết
 
 Bốn dòng:
